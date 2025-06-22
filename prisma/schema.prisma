@@ -1,0 +1,451 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Agama {
+  agama_id   Int       @id @default(autoincrement()) @db.UnsignedTinyInt
+  nama_agama String    @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  siswas     Siswa[]
+
+  @@map("m_agama")
+}
+
+model Banjar {
+  banjar_id   Int       @id @default(autoincrement()) @db.UnsignedInt
+  desa_id     Int       @db.UnsignedInt
+  banjar_nama String    @db.VarChar(255)
+  lintang     Decimal?  @db.Decimal(12, 9)
+  bujur       Decimal?  @db.Decimal(12, 9)
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+  desa        Desa      @relation(fields: [desa_id], references: [desa_id], map: "m_banjars_ibfk_1")
+  sekolahs    Sekolah[]
+  siswas      Siswa[]
+  zonasis     Zonasi[]
+
+  @@index([desa_id], map: "m_banjars_desa_id_foreign")
+  @@map("m_banjars")
+}
+
+model Desa {
+  desa_id      Int       @id @default(autoincrement()) @db.UnsignedInt
+  kecamatan_id Int       @db.UnsignedInt
+  desa_nama    String    @db.VarChar(255)
+  created_at   DateTime? @db.Timestamp(0)
+  updated_at   DateTime? @db.Timestamp(0)
+  banjars      Banjar[]
+  kecamatan    Kecamatan @relation(fields: [kecamatan_id], references: [kecamatan_id], map: "m_desas_ibfk_1")
+  sekolahs     Sekolah[]
+  siswas       Siswa[]
+
+  @@index([kecamatan_id], map: "kecamatan_id")
+  @@index([kecamatan_id], map: "m_desas_kecamatan_id_foreign")
+  @@map("m_desas")
+}
+
+model Jalur {
+  jalur_id     Int            @id @default(autoincrement()) @db.UnsignedTinyInt
+  jalur_nama   String         @db.VarChar(255)
+  created_at   DateTime?      @db.Timestamp(0)
+  updated_at   DateTime?      @db.Timestamp(0)
+  dokumenjalur DokumenJalur[]
+  periodejalur PeriodeJalur[]
+
+  @@map("m_jalurs")
+}
+
+model Kabupaten {
+  kabupaten_id   Int         @id @default(autoincrement()) @db.UnsignedInt
+  provinsi_id    Int         @db.UnsignedInt
+  kabupaten_nama String      @db.VarChar(255)
+  created_at     DateTime?   @db.Timestamp(0)
+  updated_at     DateTime?   @db.Timestamp(0)
+  provinsi       Provinsi    @relation(fields: [provinsi_id], references: [provinsi_id], map: "m_kabupatens_provinsi_id_foreign")
+  kecamatans     Kecamatan[]
+  sekolahs       Sekolah[]
+  siswas         Siswa[]
+
+  @@index([provinsi_id], map: "provinsi_id")
+  @@map("m_kabupatens")
+}
+
+model Kecamatan {
+  kecamatan_id   Int       @id @default(autoincrement()) @db.UnsignedInt
+  kabupaten_id   Int       @db.UnsignedInt
+  kecamatan_nama String    @db.VarChar(255)
+  created_at     DateTime? @db.Timestamp(0)
+  updated_at     DateTime? @db.Timestamp(0)
+  desas          Desa[]
+  kabupaten      Kabupaten @relation(fields: [kabupaten_id], references: [kabupaten_id], map: "m_kecamatans_ibfk_1")
+  sekolahs       Sekolah[]
+  siswas         Siswa[]
+
+  @@index([kabupaten_id], map: "kabupaten_id")
+  @@index([kabupaten_id], map: "m_kecamatans_kabupaten_id_foreign")
+  @@map("m_kecamatans")
+}
+
+model Pekerjaan {
+  pekerjaan_id   Int       @id @default(autoincrement()) @db.UnsignedTinyInt
+  nama_pekerjaan String    @db.VarChar(255)
+  created_at     DateTime? @db.Timestamp(0)
+  updated_at     DateTime? @db.Timestamp(0)
+
+  @@map("m_pekerjaan")
+}
+
+model Penghasilan {
+  penghasilan_id Int     @id @default(autoincrement()) @db.UnsignedInt
+  penghasilan    String? @db.VarChar(255)
+
+  @@map("m_penghasilan")
+}
+
+model Provinsi {
+  provinsi_id   Int         @id @default(autoincrement()) @db.UnsignedInt
+  provinsi_nama String      @db.VarChar(255)
+  created_at    DateTime?   @db.Timestamp(0)
+  updated_at    DateTime?   @db.Timestamp(0)
+  kabupatens    Kabupaten[]
+  sekolahs      Sekolah[]
+  siswas        Siswa[]
+
+  @@map("m_provinsis")
+}
+
+model Sekolah {
+  sekolah_id         Int            @id @default(autoincrement()) @db.UnsignedInt
+  user_id            Int?           @unique @db.UnsignedInt
+  sekolah_nama       String         @db.VarChar(255)
+  npsn               String?        @db.VarChar(255)
+  jenjang_sekolah_id Int            @db.UnsignedInt
+  banjar_id          Int?           @db.UnsignedInt
+  desa_id            Int            @db.UnsignedInt
+  kecamatan_id       Int            @db.UnsignedInt
+  kabupaten_id       Int            @db.UnsignedInt
+  provinsi_id        Int            @db.UnsignedInt
+  jumlah_kelas       Int            @db.UnsignedInt
+  total_daya_tampung Int            @db.UnsignedInt
+  isclosed           Int?           @default(0)
+  lintang            Decimal        @db.Decimal(12, 9)
+  bujur              Decimal        @db.Decimal(12, 9)
+  created_at         DateTime?      @db.Timestamp(0)
+  updated_at         DateTime?      @db.Timestamp(0)
+  kuota_sekolah      KuotaSekolah[]
+  pendaftarans       Pendaftaran[]
+  banjar             Banjar?        @relation(fields: [banjar_id], references: [banjar_id])
+  desa               Desa           @relation(fields: [desa_id], references: [desa_id])
+  kabupaten          Kabupaten      @relation(fields: [kabupaten_id], references: [kabupaten_id])
+  kecamatan          Kecamatan      @relation(fields: [kecamatan_id], references: [kecamatan_id])
+  provinsi           Provinsi       @relation(fields: [provinsi_id], references: [provinsi_id])
+  user               User?          @relation(fields: [user_id], references: [user_id])
+  siswas             Siswa[]
+  zonasis            Zonasi[]
+
+  @@index([banjar_id], map: "m_sekolahs_banjar_id_foreign")
+  @@index([desa_id], map: "m_sekolahs_desa_id_foreign")
+  @@index([jenjang_sekolah_id], map: "m_sekolahs_jenjang_sekolah_id_foreign")
+  @@index([kabupaten_id], map: "m_sekolahs_kabupaten_id_foreign")
+  @@index([kecamatan_id], map: "m_sekolahs_kecamatan_id_foreign")
+  @@index([provinsi_id], map: "m_sekolahs_provinsi_id_foreign")
+  @@map("m_sekolahs")
+}
+
+model KuotaSekolah {
+  kuota_sekolah_id Int       @id @default(autoincrement()) @db.UnsignedInt
+  sekolah_id       Int       @db.UnsignedInt
+  kuota_id         Int       @db.UnsignedTinyInt
+  periode_id       Int       @db.UnsignedTinyInt
+  kuota            Int       @default(0) @db.UnsignedInt
+  kuota_old        Int       @default(0) @db.UnsignedInt
+  created_at       DateTime? @db.Timestamp(0)
+  updated_at       DateTime? @db.Timestamp(0)
+  jenis_kuota      Kuota     @relation(fields: [kuota_id], references: [kuota_id])
+  periode          Periode   @relation(fields: [periode_id], references: [periode_id])
+  sekolah          Sekolah   @relation(fields: [sekolah_id], references: [sekolah_id])
+
+  @@unique([sekolah_id, kuota_id, periode_id])
+  @@index([kuota_id], map: "kuota_sekolah_kuota_id_fkey")
+  @@index([periode_id], map: "kuota_sekolah_periode_id_fkey")
+  @@map("kuota_sekolah")
+}
+
+model Kuota {
+  kuota_id      Int            @id @default(autoincrement()) @db.UnsignedTinyInt
+  jenis_kuota   String         @db.VarChar(255)
+  created_at    DateTime?      @db.Timestamp(0)
+  updated_at    DateTime?      @db.Timestamp(0)
+  kuota_sekolah KuotaSekolah[]
+
+  @@map("m_kuotas")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model Siswa {
+  siswa_id            Int            @id @default(autoincrement()) @db.UnsignedInt
+  user_id             Int?           @unique @db.UnsignedInt
+  banjar_id           Int?           @db.UnsignedInt
+  desa_id             Int?           @db.UnsignedInt
+  kecamatan_id        Int?           @db.UnsignedInt
+  kabupaten_id        Int?           @db.UnsignedInt
+  provinsi_id         Int?           @db.UnsignedInt
+  sekolah_asal_id     Int?           @db.UnsignedInt
+  nama                String         @db.VarChar(255)
+  tempat_lahir        String         @db.VarChar(255)
+  tanggal_lahir       DateTime       @db.Date
+  jenis_kelamin       JenisKelamin
+  nomor_telepon       String?        @db.VarChar(15)
+  agama_id            Int?           @db.UnsignedTinyInt
+  nik                 String?        @db.VarChar(16)
+  nisn                String         @db.VarChar(10)
+  alamat_tinggal      String         @db.VarChar(255)
+  alamat_kk           String?        @db.VarChar(255)
+  isluartabanan       Int?           @default(0)
+  nama_ibu            String         @db.VarChar(255)
+  pekerjaan_ibu_id    Int            @db.UnsignedTinyInt
+  penghasilan_ibu_id  Int?           @db.UnsignedInt
+  nama_ayah           String?        @db.VarChar(255)
+  pekerjaan_ayah_id   Int            @db.UnsignedTinyInt
+  penghasilan_ayah_id Int?           @db.UnsignedInt
+  nama_wali           String?        @db.VarChar(255)
+  pekerjaan_wali_id   Int?           @db.UnsignedTinyInt
+  penghasilan_wali_id Int?           @db.UnsignedInt
+  kebutuhan_khusus    Int
+  lintang             Float?
+  bujur               Float?
+  created_at          DateTime?      @db.Timestamp(0)
+  updated_at          DateTime?      @db.Timestamp(0)
+  dokumen_siswas      DokumenSiswa[]
+  pendaftaran         Pendaftaran[]
+  m_agama             Agama?         @relation(fields: [agama_id], references: [agama_id], map: "m_siswas_m_agama_FK")
+  banjar              Banjar?        @relation(fields: [banjar_id], references: [banjar_id], map: "m_siswas_m_banjars_FK")
+  desa                Desa?          @relation(fields: [desa_id], references: [desa_id], map: "m_siswas_m_desas_FK")
+  kabupaten           Kabupaten?     @relation(fields: [kabupaten_id], references: [kabupaten_id], map: "m_siswas_m_kabupatens_FK")
+  kecamatan           Kecamatan?     @relation(fields: [kecamatan_id], references: [kecamatan_id], map: "m_siswas_m_kecamatans_FK")
+  provinsi            Provinsi?      @relation(fields: [provinsi_id], references: [provinsi_id], map: "m_siswas_m_provinsis_FK")
+  sekolah_asal        Sekolah?       @relation(fields: [sekolah_asal_id], references: [sekolah_id], map: "m_siswas_m_sekolahs_FK")
+  users               User?          @relation(fields: [user_id], references: [user_id])
+
+  @@index([banjar_id], map: "m_siswas_banjar_id_foreign")
+  @@index([desa_id], map: "m_siswas_desa_id_foreign")
+  @@index([kabupaten_id], map: "m_siswas_kabupaten_id_foreign")
+  @@index([kecamatan_id], map: "m_siswas_kecamatan_id_foreign")
+  @@index([agama_id], map: "m_siswas_m_agama_FK")
+  @@index([provinsi_id], map: "m_siswas_provinsi_id_foreign")
+  @@index([sekolah_asal_id], map: "m_siswas_sekolah_asal_id_foreign")
+  @@map("m_siswas")
+}
+
+model Tahapan {
+  tahapan_id   Int       @id @default(autoincrement()) @db.UnsignedTinyInt
+  tahapan_nama String    @db.VarChar(255)
+  created_at   DateTime? @db.Timestamp(0)
+  updated_at   DateTime? @db.Timestamp(0)
+  Jadwals      Jadwal[]
+
+  @@map("m_tahapans")
+}
+
+model Zonasi {
+  zonasi_id          Int       @id @default(autoincrement()) @db.UnsignedSmallInt
+  sekolah_id         Int       @db.UnsignedInt
+  banjar_id          Int       @db.UnsignedInt
+  jenjang_sekolah_id Int       @db.UnsignedTinyInt
+  created_at         DateTime? @db.Timestamp(0)
+  updated_at         DateTime? @db.Timestamp(0)
+  banjar             Banjar    @relation(fields: [banjar_id], references: [banjar_id], map: "m_zonasis_banjar_id_foreign")
+  sekolah            Sekolah   @relation(fields: [sekolah_id], references: [sekolah_id], map: "m_zonasis_sekolah_id_foreign")
+
+  @@index([banjar_id], map: "m_zonasis_banjar_id_foreign")
+  @@index([sekolah_id], map: "m_zonasis_sekolah_id_foreign")
+  @@map("m_zonasis")
+}
+
+model JenjangSekolah {
+  jenjang_sekolah_id  Int       @id @default(autoincrement()) @db.UnsignedTinyInt
+  jenjang_sekolah     String    @db.VarChar(255)
+  max_siswa_per_kelas Int       @db.UnsignedInt
+  created_at          DateTime? @db.Timestamp(0)
+  updated_at          DateTime? @db.Timestamp(0)
+
+  @@map("m_jenjang_sekolahs")
+}
+
+model Dokumen {
+  dokumen_id     Int            @id @default(autoincrement()) @db.UnsignedInt
+  dokumen_jenis  String         @db.VarChar(255)
+  is_umum        Boolean        @default(false)
+  keterangan     String?        @db.Text
+  created_at     DateTime?      @db.Timestamp(0)
+  updated_at     DateTime?      @db.Timestamp(0)
+  dokumenjalur   DokumenJalur[]
+  dokumen_siswas DokumenSiswa[]
+
+  @@map("m_dokumen")
+}
+
+model DokumenJalur {
+  dokumen_jalur_id Int       @id @default(autoincrement()) @db.UnsignedSmallInt
+  jalur_id         Int       @db.UnsignedTinyInt
+  dokumen_id       Int       @db.UnsignedInt
+  created_at       DateTime? @db.Timestamp(0)
+  updated_at       DateTime? @db.Timestamp(0)
+  dokumen          Dokumen   @relation(fields: [dokumen_id], references: [dokumen_id])
+  jalur            Jalur     @relation(fields: [jalur_id], references: [jalur_id])
+
+  @@index([dokumen_id], map: "dokumen_jalur_dokumen_id_fkey")
+  @@index([jalur_id], map: "dokumen_jalur_jalur_id_fkey")
+  @@map("dokumen_jalur")
+}
+
+model DokumenSiswa {
+  dokumen_siswa_id Int           @id @default(autoincrement()) @db.UnsignedInt
+  siswa_id         Int           @db.UnsignedInt
+  dokumen_id       Int           @db.UnsignedInt
+  dokumen_url      String        @db.Text
+  file_path        String        @db.Text
+  url_expires_at   DateTime      @db.Timestamp(0)
+  status           StatusDokumen @default(BELUM_VALID)
+  keterangan       String?       @db.Text
+  created_at       DateTime?     @db.Timestamp(0)
+  updated_at       DateTime?     @db.Timestamp(0)
+  dokumen          Dokumen       @relation(fields: [dokumen_id], references: [dokumen_id])
+  siswa            Siswa         @relation(fields: [siswa_id], references: [siswa_id], map: "dokumen_siswa_m_siswas_FK")
+
+  @@unique([siswa_id, dokumen_id])
+  @@index([dokumen_id], map: "dokumen_siswa_dokumen_id_fkey")
+  @@map("dokumen_siswa")
+}
+
+model Pendaftaran {
+  pendaftaran_id   Int               @id @default(autoincrement()) @db.UnsignedInt
+  siswa_id         Int               @unique @db.UnsignedInt
+  periode_jalur_id Int               @db.UnsignedSmallInt
+  sekolah_id       Int               @db.UnsignedInt
+  umur_siswa       Int               @db.UnsignedInt
+  jarak_lurus      Float
+  jarak_rute       Float
+  status           StatusPendaftaran @default(BELUM_VERIF)
+  status_kelulusan StatusKelulusan   @default(PENDAFTARAN)
+  keterangan       String?           @db.Text
+  created_at       DateTime?         @db.Timestamp(0)
+  updated_at       DateTime?         @db.Timestamp(0)
+  sekolah_tujuan   Sekolah           @relation(fields: [sekolah_id], references: [sekolah_id], map: "m_pendaftaran_m_sekolahs_FK")
+  siswa            Siswa             @relation(fields: [siswa_id], references: [siswa_id], map: "m_pendaftaran_m_siswas_FK")
+  periodejalur     PeriodeJalur      @relation(fields: [periode_jalur_id], references: [periode_jalur_id])
+
+  @@index([sekolah_id], map: "m_pendaftaran_m_sekolahs_FK")
+  @@index([periode_jalur_id], map: "m_pendaftaran_periode_jalur_id_fkey")
+  @@map("m_pendaftaran")
+}
+
+model Periode {
+  periode_id    Int            @id @default(autoincrement()) @db.UnsignedTinyInt
+  nama          String         @db.VarChar(100)
+  waktu_mulai   DateTime?      @db.Timestamp(0)
+  waktu_selesai DateTime?      @db.Timestamp(0)
+  created_at    DateTime?      @db.Timestamp(0)
+  updated_at    DateTime?      @db.Timestamp(0)
+  kuota_sekolah KuotaSekolah[]
+  periodejalur  PeriodeJalur[]
+
+  @@map("m_periode")
+}
+
+model PeriodeJalur {
+  periode_jalur_id Int           @id @default(autoincrement()) @db.UnsignedSmallInt
+  periode_id       Int           @db.UnsignedTinyInt
+  jalur_id         Int           @db.UnsignedTinyInt
+  metode_ranking   MetodeRanking?
+  waktu_mulai      DateTime?     @db.Timestamp(0)
+  waktu_selesai    DateTime?     @db.Timestamp(0)
+  created_at       DateTime?     @db.Timestamp(0)
+  updated_at       DateTime?     @db.Timestamp(0)
+  jadwals          Jadwal[]
+  pendaftaran      Pendaftaran[]
+  jalur            Jalur         @relation(fields: [jalur_id], references: [jalur_id])
+  periode          Periode       @relation(fields: [periode_id], references: [periode_id])
+
+  @@unique([periode_id, jalur_id])
+  @@index([jalur_id], map: "periode_jalur_jalur_id_fkey")
+  @@map("periode_jalur")
+}
+
+model Jadwal {
+  jadwal_id        Int          @id @default(autoincrement()) @db.UnsignedSmallInt
+  periode_jalur_id Int          @db.UnsignedSmallInt
+  tahapan_id       Int          @db.UnsignedTinyInt
+  waktu_mulai      DateTime?    @db.Timestamp(0)
+  waktu_selesai    DateTime?    @db.Timestamp(0)
+  is_closed        Int          @default(0) @db.UnsignedTinyInt
+  created_at       DateTime?    @db.Timestamp(0)
+  updated_at       DateTime?    @db.Timestamp(0)
+  periodejalur     PeriodeJalur @relation(fields: [periode_jalur_id], references: [periode_jalur_id])
+  tahapan          Tahapan      @relation(fields: [tahapan_id], references: [tahapan_id])
+
+  @@unique([periode_jalur_id, tahapan_id])
+  @@index([tahapan_id], map: "jadwal_tahapan_id_fkey")
+  @@map("jadwal")
+}
+
+model User {
+  user_id       Int       @id @default(autoincrement()) @db.UnsignedInt
+  username      String    @db.VarChar(100)
+  password      String    @db.VarChar(255)
+  role_id       Int       @db.UnsignedTinyInt
+  refresh_token String?   @db.VarChar(255)
+  created_at    DateTime? @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+  sekolah       Sekolah?
+  siswa         Siswa?
+  role          Role      @relation(fields: [role_id], references: [role_id])
+
+  @@index([role_id], map: "m_user_role_id_fkey")
+  @@map("m_user")
+}
+
+model Role {
+  role_id    Int       @id @default(autoincrement()) @db.UnsignedTinyInt
+  role_nama  String    @db.VarChar(100)
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  users      User[]
+
+  @@map("m_role")
+}
+
+enum JenisKelamin {
+  L
+  P
+}
+
+enum StatusDokumen {
+  BELUM_VALID
+  VALID_SD
+  VALID_SMP
+}
+
+enum StatusPendaftaran {
+  DIBATALKAN
+  BELUM_VERIF
+  VERIF_SD
+  VERIF_SMP
+}
+
+enum StatusKelulusan {
+  PENDAFTARAN
+  LULUS
+  TIDAK_LULUS
+}
+
+enum MetodeRanking {
+  JARAK_LURUS
+  JARAK_RUTE
+}
